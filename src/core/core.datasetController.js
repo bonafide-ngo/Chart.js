@@ -76,9 +76,11 @@ function applyStack(stack, value, dsIndex, options = {}) {
     return;
   }
 
+  let found = false;
   for (i = 0, ilen = keys.length; i < ilen; ++i) {
     datasetIndex = +keys[i];
     if (datasetIndex === dsIndex) {
+      found = true;
       if (options.all) {
         continue;
       }
@@ -89,6 +91,11 @@ function applyStack(stack, value, dsIndex, options = {}) {
       value += otherValue;
     }
   }
+
+  if (!found && !options.all) {
+    return 0;
+  }
+
   return value;
 }
 
@@ -210,7 +217,7 @@ function clearStacks(meta, items) {
   for (const parsed of items) {
     const stacks = parsed._stacks;
     if (!stacks || stacks[axis] === undefined || stacks[axis][datasetIndex] === undefined) {
-      return;
+      continue;
     }
     delete stacks[axis][datasetIndex];
     if (stacks[axis]._visualValues !== undefined && stacks[axis]._visualValues[datasetIndex] !== undefined) {
@@ -420,6 +427,7 @@ export default class DatasetController {
     // if stack changed, update stack values for the whole dataset
     if (stackChanged || oldStacked !== meta._stacked) {
       updateStacks(this, meta._parsed);
+      meta._stacked = isStacked(meta.vScale, meta);
     }
   }
 
